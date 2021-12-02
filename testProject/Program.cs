@@ -5,6 +5,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using testProject.Nodes;
+using testProject.ResponseModels;
+using Newtonsoft.Json.Linq;
+
 
 namespace testProject
 {
@@ -84,86 +88,138 @@ namespace testProject
             var startUrl = "api/path/1/hard/Start";
 
             var startResponse = await client.GetAsync(url2);
-            var responseBody = await startResponse.Content.ReadAsStringAsync();
 
-            var solved = SolveA3Algo(responseBody);
 
-            //             {
-            //    "directions":[
-            //       "0 = Up",
-            //       "1 = UpRight",
-            //       "2 = Right",
-            //       "3 = DownRight",
-            //       "4 = Down",
-            //       "5 = DownLeft",
-            //       "6 = Left",
-            //       "7 = UpLeft",
-            //       "8 = End "
-            //    ],
-            //    "tiles":[
-            //       {
-            //          "id":1,
-            //          "direction":4,
-            //          "x":1,
-            //          "y":1
-            //       },
-            //       {
-            //          "id":2,
-            //          "direction":2,
-            //          "x":2,
-            //          "y":1
-            //       },
-            //       {
-            //          "id":3,
-            //          "direction":5,
-            //          "x":3,
-            //          "y":1
-            //       },
-            //       {
-            //          "id":4,
-            //          "direction":3,
-            //          "x":1,
-            //          "y":2
-            //       },
-            //       {
-            //          "id":5,
-            //          "direction":3,
-            //          "x":2,
-            //          "y":2
-            //       },
-            //       {
-            //          "id":6,
-            //          "direction":7,
-            //          "x":3,
-            //          "y":2
-            //       },
-            //       {
-            //          "id":7,
-            //          "direction":0,
-            //          "x":1,
-            //          "y":3
-            //       },
-            //       {
-            //          "id":8,
-            //          "direction":1,
-            //          "x":2,
-            //          "y":3
-            //       },
-            //       {
-            //          "id":9,
-            //          "direction":8,
-            //          "x":3,
-            //          "y":3
-            //       }
-            //    ]
-            // }
+            var resultThomas = await startResponse.Content.ReadAsStringAsync();
+
+            thomas(resultThomas);
+
+
+            var result = await startResponse.Content.ReadFromJsonAsync<ResponseA3>();
+
+            Console.WriteLine(result);
 
 
 
         }
 
-        static IList<int> SolveA3Algo(String bruh){
-            var walks = new List<int>() { 0 };
+
+
+        static Node<int> ResponseToGraphNode(ResponseA3 resp)
+        {
+            var root = new Node<Tile>(resp.tiles[0]);
+
+            Director.AddChildren(root, resp.tiles);
+
+            
+            Console.WriteLine(root);
+
+
+            return null;
+        }
+
+
+        static void thomas(String jsonasstring)
+        {
+            JObject json = JObject.Parse(jsonasstring);
+
+            var tiles = json["tiles"];
+
+            Console.WriteLine(tiles);
+
+            var directionsForId1 = new List<String>();
+            var directionsForId2 = new List<String>();
+            var directionsForId3 = new List<String>();
+            var directionsForId4 = new List<String>();
+            var directionsForId5 = new List<String>();
+            var directionsForId6 = new List<String>();
+            var directionsForId7 = new List<String>();
+            var directionsForId8 = new List<String>();
+            var directionsForId9 = new List<String>();
+
+
+            foreach (var x in tiles)
+            {
+
+                // switch (Int32.Parse(x["id"]))
+                // {
+                //     case 1:
+                //         Console.WriteLine("tst");
+                //         break;
+                //     case 2:
+                //         Console.WriteLine("2");
+                //         break;
+
+                // } **** ***** ****** SWITCH !!!! IF ELSE SUPERIOR !!!!!!!!!!!!!!!!!!!!!!
+
+
+                switch (x["id"].ToString())
+                {
+                    case "1":
+
+
+                        if (x["direction"].ToString() == "2")
+                        {
+                            directionsForId1.Add("2");
+                            directionsForId1.Add("3");
+                        }
+                        else if (x["direction"].ToString() == "3")
+                        {
+                            directionsForId1.Add("5");
+                        }
+                        else if (x["direction"].ToString() == "4")
+                        {
+                            directionsForId1.Add("4");
+                            directionsForId1.Add("7");
+                        }
+
+                        break;
+                    case "2":
+                        Console.WriteLine("tst");
+                        break;
+                    case "3":
+                        Console.WriteLine("tst");
+                        break;
+                    case "4":
+                        Console.WriteLine("tst");
+                        break;
+                    case "5":
+                        Console.WriteLine("tst");
+                        break;
+                    case "6":
+                        Console.WriteLine("tst");
+                        break;
+                    case "7":
+                        Console.WriteLine("tst");
+                        break;
+                    case "8":
+                        Console.WriteLine("tst");
+                        break;
+                    case "9":
+                        Console.WriteLine("tst");
+                        break;
+
+
+                }
+
+
+
+
+
+
+            }
+
+            Console.WriteLine("==============");
+            directionsForId1.ForEach(n => Console.WriteLine(n));
+
+            Console.WriteLine("==============");
+
+
+
+        }
+
+        static IList<int> SolveA3Algo(ResponseA3 resp)
+        {
 
 
 
@@ -175,10 +231,9 @@ namespace testProject
 
 
 
+            return null;
 
-
-
-            return walks;
+            // return walks;
 
         }
 
