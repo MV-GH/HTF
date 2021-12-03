@@ -15,5 +15,10 @@ namespace testProject
         {
             return id;
         }
+
+        public override string ToString()
+        {
+            return id.ToString();
+        }
     }
 }

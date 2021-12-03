@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Transactions;
 using testProject.ResponseModels;
 
@@ -11,78 +13,35 @@ namespace testProject.Nodes
         {
             var board = ConvertToArray(grid);
             List<Tile> test = new List<Tile>();
-            switch (tile.direction)
+            Vector2 direction = tile.direction switch
             {
-                case Direction.Down:
-                    for (int i = tile.x; i < board.Length; i++)
-                    {
-                        test.Add(board[i, tile.y]);
-                    }
-                    break;
-                case Direction.Up:
-                    for (int i = tile.x - 1; i > 0; i--)
-                    {
-                        test.Add(board[i, tile.y]);
-                    }
-                    break;
-                case Direction.Left:
-                    for (int i = tile.y - 1; i > 0; i--)
-                    {
-                        test.Add(board[tile.x, i]);
-                    }
-                    break;
-                case Direction.Right:
-                    for (int i = tile.y; i < board.Length; i++)
-                    {
-                        test.Add(board[tile.x, i]);
-                    }
-                    break;
-                case Direction.DownRight:
-                    for (int i = 0; i < board.Length; i++)
-                    {
-                        var x = tile.x + i;
-                        var y = tile.y + i;
-                        if (x >= board.Length || y >= board.Length) break;
-                        test.Add(board[x, y]);
-                    }
-                    break;
-                case Direction.UpLeft:
-                    for (int i = 1; i < board.Length; i++)
-                    {
-                        var x = tile.x - i;
-                        var y = tile.y - i;
-                        if (x < 0 || y < 0) break;
-                        test.Add(board[x, y]);
-                    }
-                    break;
-                case Direction.DownLeft:
-                    for (int i = 1; i < board.Length; i++)
-                    {
-                        var x = tile.x - i;
-                        var y = tile.y + i;
-                        if (ExceedBoard(x, y, board)) break;
-                        test.Add(board[x, y]);
-                    }
-                    break;
-                case Direction.UpRight:
-                    for (int i = 1; i < board.Length; i++)
-                    {
-                        var x = tile.x + i;
-                        var y = tile.y - i;
-                        if (ExceedBoard(x, y, board)) break;
-                        test.Add(board[x, y]);
-                    }
-                    break;
-                case Direction.End:
-                    break;
+                Direction.Down => new Vector2(0, 1),
+                Direction.Up => new Vector2(0, -1),
+                Direction.Left => new Vector2(-1, 0),
+                Direction.Right => new Vector2(1, 0),
+                Direction.DownLeft => new Vector2(-1, 1),
+                Direction.DownRight => new Vector2(1, 1),
+                Direction.UpLeft => new Vector2(-1, -1),
+                Direction.UpRight => new Vector2(1, -1),
+                Direction.End => new Vector2(0, 0),
+                _ => throw new ArgumentOutOfRangeException(tile.direction.ToString())
+            };
+            var size = board.GetLength(0);
+            for (int i = 1; i < size; i++)
+            {
+                int x = (tile.x - 1) + i * (int)direction.X;
+                int y = (tile.y - 1) + i * (int)direction.Y;
+
+                if (ExceedBoard(x, y, size)) break;
+                test.Add(board[x, y]);
             }
 
             return test;
         }
 
-        private static bool ExceedBoard(int x, int y, Tile[,] board)
+        private static bool ExceedBoard(int x, int y, int boardSize)
         {
-            return !(x >= 0 && y >= 0 && x < board.Length && y < board.Length);
+            return x < 0 || y < 0 || x >= boardSize || y >= boardSize;
         }
 
         private static Tile[,] ConvertToArray(IList<Tile> grid)
@@ -96,16 +55,28 @@ namespace testProject.Nodes
 
             return arr;
         }
-        public static void AddChildren(Node<Tile> root, IList<Tile> grid)
+
+        public static Node<Tile> AddChildren(Node<Tile> root, IList<Tile> grid)
         {
-            foreach (var node in Director.GetPossibleTiles(root.Val, grid).Select(t => new Node<Tile>(t, root)))
+            foreach (var node in GetPossibleTiles(root.Val, grid).Select(t => new Node<Tile>(t, root)))
             {
-                if (!root.Contains(node))
+                if (!root.Contains(node) && !root.Equals(node))
                 {
                     root.Children.Add(node);
-                    AddChildren(node, grid);
+                    if (node.GetLength() == grid.Count) return node;
+                    var result = AddChildren(node, grid);
+                    if (result != null) return result;
                 }
+            }
 
+            return null;
+        }
+
+        public static IEnumerable<int> GetListOfParent(Node<Tile> lastNode)
+        {
+            for (var node = lastNode; node != null; node = node.Parent)
+            {
+                yield return node.Val.id;
             }
         }
     }

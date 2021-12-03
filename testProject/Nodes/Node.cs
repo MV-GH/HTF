@@ -24,7 +24,7 @@ namespace testProject.Nodes
             Children = new List<Node<T>>();
         }
 
-        protected bool Equals(Node<T> other)
+        public bool Equals(Node<T> other)
         {
             return EqualityComparer<T>.Default.Equals(Val, other.Val);
         }
@@ -36,7 +36,18 @@ namespace testProject.Nodes
 
         public override string ToString()
         {
-            return $"({Val})\n {string.Join(" | ", Children)} !!!!";
+            return $"({Val})";
+        }
+
+        public static void PrintTree(Node<T> tree, String indent = "", bool last = true)
+        {
+            Console.WriteLine(indent + "+- " + tree);
+            indent += last ? "   " : "|  ";
+
+            for (int i = 0; i < tree.Children.Count; i++)
+            {
+                PrintTree(tree.Children[i], indent, i == tree.Children.Count - 1);
+            }
         }
 
         public bool Contains(Node<T> node)
@@ -54,7 +65,7 @@ namespace testProject.Nodes
         public int GetLength()
         {
             var parent = Parent;
-            int i = 0;
+            int i = 1;
             while (parent != null)
             {
                 i++;
@@ -63,6 +74,15 @@ namespace testProject.Nodes
 
             return i;
         }
-       
+
+        public Node<T> GetRoot()
+        {
+            var parent = Parent ?? this;
+            while (parent.Parent != null)
+            {
+                parent = parent.Parent;
+            }
+            return parent;
+        }
     }
 }
